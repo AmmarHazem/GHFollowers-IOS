@@ -27,6 +27,7 @@ class FollowersListVC: GFDataLoadingVC {
     private var hasMoreFollowers = false
     private var isSearching = false
     private var isFavourite = false
+    private var isLoadingFollowers = false
     
     
     //MARK: - Initializers
@@ -93,10 +94,10 @@ class FollowersListVC: GFDataLoadingVC {
     private func configureFavouritesButton() {
         var buttonIcon: UIImage!
         if isFavourite {
-            buttonIcon = UIImage(systemName: SFSymbols.heartFill)
+            buttonIcon = SFSymbols.heartFill
         }
         else {
-            buttonIcon = UIImage(systemName: SFSymbols.followers)
+            buttonIcon = SFSymbols.followers
         }
         let addToFavouriteBarButton = UIBarButtonItem(image: buttonIcon, style: .plain, target: self, action: #selector(addUserToFavourites))
         self.navigationItem.setRightBarButton(addToFavouriteBarButton, animated: true)
@@ -187,6 +188,7 @@ class FollowersListVC: GFDataLoadingVC {
     
     private func getFollowers() {
         showLoadingView()
+        isLoadingFollowers = true
         NetworkManager.shared.getFollowers(for: username, page: currentPage) { [weak self] result in
             self?.removeLoadingView()
             switch result {
@@ -210,6 +212,7 @@ class FollowersListVC: GFDataLoadingVC {
                 case .failure(let error):
                     self?.presentGFAlert(title: "Error", message: error.rawValue, buttonTitle: "OK")
             }
+            self?.isLoadingFollowers = false
         }
     }
     
@@ -229,7 +232,7 @@ extension FollowersListVC: UICollectionViewDelegate {
     
     
     func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
-        if !hasMoreFollowers { return }
+        if !hasMoreFollowers || isLoadingFollowers { return }
         let offsetY = scrollView.contentOffset.y
         let contentHeight = scrollView.contentSize.height
         let height = scrollView.bounds.height
@@ -238,7 +241,7 @@ extension FollowersListVC: UICollectionViewDelegate {
 //        print(offsetY)
 //        print(contentHeight)
 //        print(height)
-        if offsetY > contentHeight - height {
+        if offsetY >= contentHeight - height {
             currentPage += 1
             getFollowers()
         }
@@ -261,7 +264,6 @@ extension FollowersListVC: UICollectionViewDelegate {
 extension FollowersListVC: UISearchResultsUpdating {
     
     func updateSearchResults(for searchController: UISearchController) {
-        
         guard let filterText = searchController.searchBar.text,
               !filterText.isEmpty else {
             isSearching = false

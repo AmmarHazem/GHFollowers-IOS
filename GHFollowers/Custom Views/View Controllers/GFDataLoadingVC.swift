@@ -10,7 +10,7 @@ import UIKit
 class GFDataLoadingVC: UIViewController {
     
     
-    var containerView: UIView!
+    var containerView: UIView?
     
 
     func presentGFAlert(title: String, message: String, buttonTitle: String) {
@@ -25,27 +25,27 @@ class GFDataLoadingVC: UIViewController {
     
     func showLoadingView() {
         containerView = UIView(frame: view.frame)
-        view.addSubview(containerView)
+        view.addSubview(containerView!)
         
         
-        containerView.backgroundColor = .systemBackground
-        containerView.alpha = 0.0
+        containerView?.backgroundColor = .systemBackground
+        containerView?.alpha = 0.0
         
-        UIView.animate(withDuration: 0.7) { self.containerView.alpha = 0.8 }
+        UIView.animate(withDuration: 0.7) { self.containerView?.alpha = 0.8 }
         
         let activityIndicator = UIActivityIndicatorView(style: .large)
-        containerView.addSubview(activityIndicator)
+        containerView?.addSubview(activityIndicator)
         activityIndicator.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            activityIndicator.centerXAnchor.constraint(equalTo: containerView.centerXAnchor),
-            activityIndicator.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
+            activityIndicator.centerXAnchor.constraint(equalTo: containerView!.centerXAnchor),
+            activityIndicator.centerYAnchor.constraint(equalTo: containerView!.centerYAnchor),
         ])
         activityIndicator.startAnimating()
     }
     
     
     func removeLoadingView() {
-        containerView.removeFromSuperview()
+        containerView?.removeFromSuperview()
         containerView = nil
     }
     

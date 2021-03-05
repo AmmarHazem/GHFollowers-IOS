@@ -13,7 +13,7 @@ class GFUserInfoHeaderVC: UIViewController {
     private let avatarImgView = GFAvatarImageView(frame: .zero)
     private let usernameLabel = GHTitleLabel(textAlignment: .left, fontSize: 34)
     private let nameLabel = GFSecondaryLabel(fontSize: 18)
-    private let locationImgView = UIImageView(image: UIImage(systemName: SFSymbols.location))
+    private let locationImgView = UIImageView(image: SFSymbols.location)
     private let locationLabel = GFSecondaryLabel(fontSize: 18)
     private let bioLabel = GFBodyLabel(textAlignment: .left)
     var user: User!

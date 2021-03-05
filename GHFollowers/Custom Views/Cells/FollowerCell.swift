@@ -24,7 +24,7 @@ class FollowerCell: UICollectionViewCell {
     }
     
     override func prepareForReuse() {
-        avatarImageView.image = UIImage(named: "avatar-placeholder")!
+        avatarImageView.image = Images.avatarPlaceHolder
     }
     
     

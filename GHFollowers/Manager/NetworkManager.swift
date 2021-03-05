@@ -100,32 +100,24 @@ struct NetworkManager {
             
             if error != nil {
                 print("--- response error 1")
-                DispatchQueue.main.async {
-                    complitionHandler(.failure(.networkError))
-                }
+                DispatchQueue.main.async { complitionHandler(.failure(.networkError)) }
             }
             
             guard let response = response as? HTTPURLResponse,
                   response.statusCode >= 200 && response.statusCode < 300,
                   let data = data else {
                 print("--- response error 2")
-                DispatchQueue.main.async {
-                    complitionHandler(.failure(.defaultMessage))
-                }
+                DispatchQueue.main.async { complitionHandler(.failure(.defaultMessage)) }
                 return
             }
             
             let decoder = JSONDecoder()
             decoder.keyDecodingStrategy = .convertFromSnakeCase
             if let followers = try? decoder.decode([Follower].self, from: data) {
-                DispatchQueue.main.async {
-                    complitionHandler(.success(followers))
-                }
+                DispatchQueue.main.async { complitionHandler(.success(followers)) }
             }
             else {
-                DispatchQueue.main.async {
-                    complitionHandler(.failure(.defaultMessage))
-                }
+                DispatchQueue.main.async { complitionHandler(.failure(.defaultMessage)) }
             }
             
         }
