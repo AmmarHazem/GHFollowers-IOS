@@ -7,13 +7,22 @@
 
 import UIKit
 
-class UserInfoVC: UIViewController {
+
+protocol UserInfoVCDelegate: class {
+    func didTapGithubProfileButton(forUser user: User)
+    func didTapGetFollowersButton(forUser user: User)
+}
+
+
+class UserInfoVC: GFDataLoadingVC {
 
     
     let headerView = UIView()
     let itemViewOne = UIView()
     let itemViewTwo = UIView()
+    let dateLabel = GFBodyLabel(textAlignment: .center)
     var username: String!
+    weak var followerListVCDelegate: FollowerListVCDelegate?
     
     
     override func viewDidLoad() {
@@ -35,9 +44,7 @@ class UserInfoVC: UIViewController {
         view.addSubview(headerView)
         view.addSubview(itemViewOne)
         view.addSubview(itemViewTwo)
-        
-        itemViewOne.backgroundColor = .systemRed
-        itemViewTwo.backgroundColor = .systemBlue
+        view.addSubview(dateLabel)
         
         headerView.translatesAutoresizingMaskIntoConstraints = false
         itemViewOne.translatesAutoresizingMaskIntoConstraints = false
@@ -60,23 +67,41 @@ class UserInfoVC: UIViewController {
             itemViewTwo.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: padding),
             itemViewTwo.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -padding),
             itemViewTwo.heightAnchor.constraint(equalToConstant: cardItemHeight),
+            
+            dateLabel.topAnchor.constraint(equalTo: itemViewTwo.bottomAnchor, constant: padding),
+            dateLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: padding),
+            dateLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -padding),
+            dateLabel.heightAnchor.constraint(equalToConstant: 30),
         ])
     }
     
     
     private func getUserInfo() {
-        NetworkManager.shared.getUserInfo(for: username) { result in
+        NetworkManager.shared.getUserInfo(for: username) { [weak self] result in
+            guard let self = self else { return }
             switch result {
             case .success(let user):
                 print("--- fetch user success")
                 print(user.login)
-                self.add(childVC: GFUserInfoHeaderVC(user: user), to: self.headerView)
+                self.configureUIElements(forUser: user)
             case .failure(let error):
                 print("---- fetch user error")
                 print(error.rawValue)
                 self.presentGFAlert(title: "Error", message: error.rawValue, buttonTitle: "OK")
             }
         }
+    }
+    
+    
+    private func configureUIElements(forUser user: User) {
+        let repoItemVC = GFRepoItemVC(user: user)
+        let followerItemVC = GFFollowerItemVC(user: user)
+        repoItemVC.userInfoVCDelegate = self
+        followerItemVC.userInfoVCDelegate = self
+        self.dateLabel.text = "Github since \(user.createdAt.convertToMonthYearFormat())"
+        self.add(childVC: GFUserInfoHeaderVC(user: user), to: self.headerView)
+        self.add(childVC: repoItemVC, to: self.itemViewOne)
+        self.add(childVC: followerItemVC, to: self.itemViewTwo)
     }
     
     
@@ -92,4 +117,26 @@ class UserInfoVC: UIViewController {
         dismiss(animated: true, completion: nil)
     }
 
+}
+
+
+extension UserInfoVC: UserInfoVCDelegate {
+    
+    
+    func didTapGithubProfileButton(forUser user: User) {
+        if let url = user.htmlUrl {
+            self.presentSafariVC(withURL: url)
+        }
+    }
+    
+    
+    func didTapGetFollowersButton(forUser user: User) {
+        if user.followers == 0 {
+            presentGFAlert(title: "No Followers", message: "This user has no followers yet!", buttonTitle: "OK")
+            return
+        }
+        dismiss(animated: true) { self.followerListVCDelegate?.didRequestFollowers(forUsername: user.login) }
+    }
+    
+    
 }

@@ -39,17 +39,10 @@ class GFAvatarImageView: UIImageView {
     
     
     func getAndCacheImg(from url: URL) {
-        let task = URLSession(configuration: .default).dataTask(with: url) { [weak self] data, response, error in
-            if error != nil { return }
-            guard let response = response as? HTTPURLResponse,
-                  response.statusCode >= 200 && response.statusCode < 300,
-                  let data = data
-            else { return }
-            guard let image = UIImage(data: data) else { return }
-            self?.networkManager.addImageToCache(image, forKey: NSString(string: url.absoluteString), cost: data.count)
-            DispatchQueue.main.async { self?.image = image }
+        networkManager.downloadImage(from: url) { [weak self] image in
+            guard let self = self else { return }
+            self.image = image
         }
-        task.resume()
     }
     
     

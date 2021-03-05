@@ -16,8 +16,29 @@ struct NetworkManager {
     
     
     private init() {
-//        cache.countLimit = 200
+        //        cache.countLimit = 200
         cache.totalCostLimit = 200
+    }
+    
+    
+    func downloadImage(from url: URL, completed: @escaping (UIImage?) -> Void) {
+        let task = URLSession(configuration: .default).dataTask(with: url) { data, response, error in
+            if error != nil {
+                DispatchQueue.main.async { completed(nil) }
+                return
+            }
+            guard let response = response as? HTTPURLResponse,
+                  response.statusCode >= 200 && response.statusCode < 300,
+                  let data = data,
+                  let image = UIImage(data: data)
+            else {
+                DispatchQueue.main.async { completed(nil) }
+                return
+            }
+            self.addImageToCache(image, forKey: NSString(string: url.absoluteString), cost: data.count)
+            DispatchQueue.main.async { completed(image) }
+        }
+        task.resume()
     }
     
     

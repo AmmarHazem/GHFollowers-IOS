@@ -8,7 +8,7 @@
 import Foundation
 
 
-struct Follower: Decodable, Hashable {
+struct Follower: Codable, Hashable {
     let login: String
     let avatarUrl: String
 }

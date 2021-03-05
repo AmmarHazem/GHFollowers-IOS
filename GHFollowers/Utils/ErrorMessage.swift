@@ -11,4 +11,5 @@ import Foundation
 enum GFError: String, Error {
     case networkError = "Network error. Please try again."
     case defaultMessage = "Something went wrong. Please try again."
+    case alreadyAddedToFavourites = "You already have favourited this user."
 }

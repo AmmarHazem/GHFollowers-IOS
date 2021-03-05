@@ -22,11 +22,10 @@ class GFButton: UIButton {
     }
     
     
-    init(backgroundColor: UIColor, title: String) {
-        super.init(frame: .zero)
+    convenience init(backgroundColor: UIColor, title: String) {
+        self.init(frame: .zero)
         self.backgroundColor = backgroundColor
         self.setTitle(title, for: .normal)
-        configure()
     }
     
     
@@ -35,5 +34,12 @@ class GFButton: UIButton {
         setTitleColor(.white, for: .normal)
         titleLabel?.font = UIFont.preferredFont(forTextStyle: .headline)
         self.translatesAutoresizingMaskIntoConstraints = false
+    }
+    
+    
+    func set(background color: UIColor, title: String) {
+        self.backgroundColor = color
+        self.setTitle(title, for: .normal)
+        configure()
     }
 }

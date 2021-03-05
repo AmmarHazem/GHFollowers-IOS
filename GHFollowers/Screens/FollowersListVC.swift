@@ -7,7 +7,13 @@
 
 import UIKit
 
-class FollowersListVC: UIViewController {
+
+protocol FollowerListVCDelegate: class {
+    func didRequestFollowers(forUsername username: String)
+}
+
+
+class FollowersListVC: GFDataLoadingVC {
     
     enum Section { case main }
     
@@ -20,6 +26,19 @@ class FollowersListVC: UIViewController {
     private var currentPage = 1
     private var hasMoreFollowers = false
     private var isSearching = false
+    private var isFavourite = false
+    
+    
+    //MARK: - Initializers
+    init(username: String) {
+        super.init(nibName: nil, bundle: nil)
+        self.username = username
+    }
+    
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
 
     //MARK: - Lifecycle Methods
@@ -37,13 +56,90 @@ class FollowersListVC: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.navigationController?.setNavigationBarHidden(false, animated: true)
+        getIsFavouriteState()
     }
     
     
     //MARK: - Custom Methods
+    
+    private func getIsFavouriteState() {
+        PersistenceManager.getFavourites { result in
+            switch result {
+            case .success(let favourites):
+                favourites.forEach { user in
+                    if user.login == self.username {
+                        self.isFavourite = true
+                    }
+                    else {
+                        self.isFavourite = false
+                    }
+                }
+            case .failure(_):
+                break
+            }
+            self.configureFavouritesButton()
+            print("--- favourite state \(self.isFavourite)")
+        }
+    }
+    
+    
     private func configureViewController() {
         self.view.backgroundColor = .systemBackground
         self.navigationController?.navigationBar.prefersLargeTitles = true
+        self.title = username
+    }
+    
+    
+    private func configureFavouritesButton() {
+        var buttonIcon: UIImage!
+        if isFavourite {
+            buttonIcon = UIImage(systemName: SFSymbols.heartFill)
+        }
+        else {
+            buttonIcon = UIImage(systemName: SFSymbols.followers)
+        }
+        let addToFavouriteBarButton = UIBarButtonItem(image: buttonIcon, style: .plain, target: self, action: #selector(addUserToFavourites))
+        self.navigationItem.setRightBarButton(addToFavouriteBarButton, animated: true)
+    }
+    
+    
+    @objc private func addUserToFavourites() {
+        
+        showLoadingView()
+        
+        NetworkManager.shared.getUserInfo(for: username) { [weak self] result in
+            guard let self = self else { return }
+            
+            self.removeLoadingView()
+            
+            switch result {
+            case .success(let user):
+                let follower = Follower(login: user.login, avatarUrl: user.avatarUrl?.absoluteString ?? "")
+                PersistenceManager.toggleFavourite(user: follower) { [weak self] error in
+                    guard let self =  self else { return }
+                    
+                    if let error = error {
+                        self.presentGFAlert(title: "Error", message: error.rawValue, buttonTitle: "OK")
+                        return
+                    }
+                    
+                    self.getIsFavouriteState()
+                }
+//                PersistenceManager.updateWith(favourite: follower, action: .add) { [weak self] error in
+//                    guard let self = self else { return }
+//
+//                    if let error = error {
+//                        self.presentGFAlert(title: "Error", message: error.rawValue, buttonTitle: "OK")
+//                        return
+//                    }
+//                    self.isFavourite = true
+//                    self.configureFavouritesButton()
+//                    self.presentGFAlert(title: "Success", message: "\(user.login) has been added to favourites", buttonTitle: "OK")
+//                }
+            case .failure(let error):
+                self.presentGFAlert(title: "Error", message: error.rawValue, buttonTitle: "OK")
+            }
+        }
     }
     
     
@@ -154,6 +250,7 @@ extension FollowersListVC: UICollectionViewDelegate {
         let follower = array[indexPath.item]
         let userInfoVC = UserInfoVC()
         userInfoVC.username = follower.login
+        userInfoVC.followerListVCDelegate = self
         let navigationController = UINavigationController(rootViewController: userInfoVC)
         self.present(navigationController, animated: true, completion: nil)
     }
@@ -176,6 +273,26 @@ extension FollowersListVC: UISearchResultsUpdating {
         isSearching = true
         filteredFollowers = followers.filter() { $0.login.lowercased().contains(filterText.lowercased()) }
         updateData(followers: filteredFollowers)
+    }
+    
+}
+
+
+//MARK: - Follower List VC Delegate
+extension FollowersListVC: FollowerListVCDelegate {
+    func didRequestFollowers(forUsername username: String) {
+        print("--- didRequestFollowers")
+        self.username = username
+        self.title = username
+        followers.removeAll()
+        filteredFollowers.removeAll()
+        currentPage = 1
+        isSearching = false
+        isFavourite = false
+        hasMoreFollowers = false
+        collectionView.scrollToItem(at: IndexPath(item: 0, section: 0), at: .top, animated: true)
+        getIsFavouriteState()
+        getFollowers()
     }
     
 }
