@@ -45,30 +45,34 @@ class FavouritesListVC: GFDataLoadingVC {
         tableView.rowHeight = 80
         tableView.delegate = self
         tableView.dataSource = self
+        tableView.removeExcessCells()
         tableView.register(FavouritesCell.self, forCellReuseIdentifier: FavouritesCell.reuseID)
     }
     
     
     private func getFavourites() {
-        PersistenceManager.getFavourites { (result) in
+        PersistenceManager.getFavourites { result in
             switch result {
             case .success(let favourites):
-                
-                if favourites.isEmpty {
-                    self.showEmptyStateView(with: emptyStateMessage, in: self.view)
-                    self.tableView.isHidden = true
-                    return
-                }
-
-                self.favourites = favourites
-                self.tableView.reloadData()
-                self.view.bringSubviewToFront(self.tableView)
-                break
+                self.updateUI(with: favourites)
             case .failure(let error):
                 self.presentGFAlert(title: "Error", message: error.rawValue, buttonTitle: "OK")
                 break
             }
         }
+    }
+    
+    
+    private func updateUI(with favourites: [Follower]) {
+        if favourites.isEmpty {
+            self.showEmptyStateView(with: emptyStateMessage, in: self.view)
+            self.tableView.isHidden = true
+            return
+        }
+
+        self.favourites = favourites
+        self.tableView.reloadData()
+        self.view.bringSubviewToFront(self.tableView)
     }
 
 }
@@ -101,8 +105,8 @@ extension FavouritesListVC: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle != .delete { return }
-        let user = favourites[indexPath.item]
-        favourites.remove(at: indexPath.item)
+        let user = favourites[indexPath.row]
+        favourites.remove(at: indexPath.row)
         tableView.deleteRows(at: [indexPath], with: .left)
         if favourites.isEmpty {
             tableView.isHidden = true

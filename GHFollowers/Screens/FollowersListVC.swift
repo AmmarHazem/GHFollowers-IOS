@@ -115,17 +115,26 @@ class FollowersListVC: GFDataLoadingVC {
             
             switch result {
             case .success(let user):
-                let follower = Follower(login: user.login, avatarUrl: user.avatarUrl?.absoluteString ?? "")
-                PersistenceManager.toggleFavourite(user: follower) { [weak self] error in
-                    guard let self =  self else { return }
-                    
-                    if let error = error {
-                        self.presentGFAlert(title: "Error", message: error.rawValue, buttonTitle: "OK")
-                        return
-                    }
-                    
-                    self.getIsFavouriteState()
-                }
+                self.toggleUserFavourite(user)
+            case .failure(let error):
+                self.presentGFAlert(title: "Error", message: error.rawValue, buttonTitle: "OK")
+            }
+        }
+    }
+    
+    
+    private func toggleUserFavourite(_ user: User) {
+        let follower = Follower(login: user.login, avatarUrl: user.avatarUrl?.absoluteString ?? "")
+        PersistenceManager.toggleFavourite(user: follower) { [weak self] error in
+            guard let self =  self else { return }
+            
+            if let error = error {
+                self.presentGFAlert(title: "Error", message: error.rawValue, buttonTitle: "OK")
+                return
+            }
+            
+            self.getIsFavouriteState()
+        }
 //                PersistenceManager.updateWith(favourite: follower, action: .add) { [weak self] error in
 //                    guard let self = self else { return }
 //
@@ -137,10 +146,6 @@ class FollowersListVC: GFDataLoadingVC {
 //                    self.configureFavouritesButton()
 //                    self.presentGFAlert(title: "Success", message: "\(user.login) has been added to favourites", buttonTitle: "OK")
 //                }
-            case .failure(let error):
-                self.presentGFAlert(title: "Error", message: error.rawValue, buttonTitle: "OK")
-            }
-        }
     }
     
     
@@ -193,27 +198,28 @@ class FollowersListVC: GFDataLoadingVC {
             self?.removeLoadingView()
             switch result {
                 case .success(let followers):
-//                    print(followers)
-//                    print(followers.count)
-//                    self?.followers = followers
-                    if followers.count < 100 {
-                        self?.hasMoreFollowers = false
-                    }
-                    else {
-                        self?.hasMoreFollowers = true
-                    }
-                    self?.followers.append(contentsOf: followers)
-                    if self?.followers.isEmpty ?? false {
-                        self?.showEmptyStateView(with: "This user has no followers.", in: self!.view)
-                        return
-                    }
-                    self?.updateData(followers: self!.followers)
-                
+                    self?.updateUI(with: followers)
                 case .failure(let error):
                     self?.presentGFAlert(title: "Error", message: error.rawValue, buttonTitle: "OK")
             }
             self?.isLoadingFollowers = false
         }
+    }
+    
+    
+    private func updateUI(with followers: [Follower]) {
+        if followers.count < 100 {
+            self.hasMoreFollowers = false
+        }
+        else {
+            self.hasMoreFollowers = true
+        }
+        self.followers.append(contentsOf: followers)
+        if self.followers.isEmpty {
+            showEmptyStateView(with: "This user has no followers.", in: view)
+            return
+        }
+        updateData(followers: self.followers)
     }
     
     
@@ -232,7 +238,7 @@ extension FollowersListVC: UICollectionViewDelegate {
     
     
     func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
-        if !hasMoreFollowers || isLoadingFollowers { return }
+        if !hasMoreFollowers || isLoadingFollowers || isSearching { return }
         let offsetY = scrollView.contentOffset.y
         let contentHeight = scrollView.contentSize.height
         let height = scrollView.bounds.height

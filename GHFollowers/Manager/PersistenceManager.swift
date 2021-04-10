@@ -22,16 +22,8 @@ enum PersistenceManager {
     
     
     static func toggleFavourite(user: Follower, completed: (GFError?) -> Void) {
-        guard let favouritesJsonData = userDefaults.object(forKey: Keys.favourites) as? Data else {
-            print("--- toggle error 1")
-            completed(.defaultMessage)
-            return
-        }
-        guard var favourites = try? JSONDecoder().decode([Follower].self, from: favouritesJsonData) else {
-            print("--- toggle error 2")
-            completed(.defaultMessage)
-            return
-        }
+        let favouritesJsonData = userDefaults.object(forKey: Keys.favourites) as? Data ?? Data()
+        var favourites = (try? JSONDecoder().decode([Follower].self, from: favouritesJsonData)) ?? []
         
         if let user = favourites.first(where: { $0.login == user.login }) {
             favourites.removeAll() { $0.login == user.login }
@@ -52,21 +44,20 @@ enum PersistenceManager {
     static func updateWith(favourite: Follower, action type: PersistenceActionType, completed: (GFError?) -> Void) {
         getFavourites { result in
             switch result {
-            case .success(let favourites):
+            case .success(var favourites):
                 
-                var retrievedFavourites = favourites
                 switch type {
                 case .add:
-                    if retrievedFavourites.contains(favourite) {
+                    if favourites.contains(favourite) {
                         completed(.alreadyAddedToFavourites)
                         return
                     }
-                    retrievedFavourites.append(favourite)
+                    favourites.append(favourite)
                 case .remove:
-                    retrievedFavourites.removeAll { $0.login == favourite.login }
+                    favourites.removeAll { $0.login == favourite.login }
                 }
                 
-                completed(save(favourites: retrievedFavourites))
+                completed(save(favourites: favourites))
                 
             case .failure(let error):
                 completed(error)
@@ -78,6 +69,7 @@ enum PersistenceManager {
     static func getFavourites(completed: (Result<[Follower], GFError>) -> Void) {
         
         guard let favouritesData = userDefaults.object(forKey: Keys.favourites) as? Data else {
+            print("--- get favourites error 1")
             completed(.success([]))
             return
         }

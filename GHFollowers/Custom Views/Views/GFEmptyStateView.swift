@@ -45,9 +45,9 @@ class GFEmptyStateView: UIView {
         messageLabel.translatesAutoresizingMaskIntoConstraints = false
         
         let messageLabelCenterYConstant: CGFloat = DeviceTypes.isiPhone8Standard || DeviceTypes.isiPhone8Zoomed ? -110 : -150
-        messageLabel.centerYAnchor.constraint(equalTo: self.centerYAnchor, constant: messageLabelCenterYConstant).isActive = true
         
         NSLayoutConstraint.activate([
+            messageLabel.centerYAnchor.constraint(equalTo: self.centerYAnchor, constant: messageLabelCenterYConstant),
             messageLabel.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 30),
             messageLabel.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -30),
             messageLabel.heightAnchor.constraint(equalToConstant: 200),

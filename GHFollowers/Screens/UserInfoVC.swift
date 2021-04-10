@@ -16,7 +16,8 @@ protocol UserInfoVCDelegate: class {
 
 class UserInfoVC: GFDataLoadingVC {
 
-    
+    let scrollView = UIScrollView()
+    let contentView = UIView()
     let headerView = UIView()
     let itemViewOne = UIView()
     let itemViewTwo = UIView()
@@ -41,44 +42,55 @@ class UserInfoVC: GFDataLoadingVC {
     
     
     private func layoutUI() {
-        view.addSubview(headerView)
-        view.addSubview(itemViewOne)
-        view.addSubview(itemViewTwo)
-        view.addSubview(dateLabel)
+        view.addSubview(scrollView)
+        scrollView.addSubview(contentView)
+        contentView.addSubview(headerView)
+        contentView.addSubview(itemViewOne)
+        contentView.addSubview(itemViewTwo)
+        contentView.addSubview(dateLabel)
         
+        contentView.translatesAutoresizingMaskIntoConstraints = false
         headerView.translatesAutoresizingMaskIntoConstraints = false
         itemViewOne.translatesAutoresizingMaskIntoConstraints = false
         itemViewTwo.translatesAutoresizingMaskIntoConstraints = false
+        
+        scrollView.pinToEdges(of: view)
+        contentView.pinToEdges(of: scrollView)
 
         let padding: CGFloat = 20
         let cardItemHeight: CGFloat = 140
         NSLayoutConstraint.activate([
-            headerView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            headerView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
-            headerView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+            contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor),
+            contentView.heightAnchor.constraint(equalToConstant: 600),
+            
+            headerView.topAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.topAnchor),
+            headerView.leadingAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.leadingAnchor),
+            headerView.trailingAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.trailingAnchor),
             headerView.heightAnchor.constraint(equalToConstant: 180),
             
             itemViewOne.topAnchor.constraint(equalTo: headerView.bottomAnchor, constant: padding),
-            itemViewOne.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: padding),
-            itemViewOne.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -padding),
+            itemViewOne.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: padding),
+            itemViewOne.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -padding),
             itemViewOne.heightAnchor.constraint(equalToConstant: cardItemHeight),
             
             itemViewTwo.topAnchor.constraint(equalTo: itemViewOne.bottomAnchor, constant: padding),
-            itemViewTwo.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: padding),
-            itemViewTwo.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -padding),
+            itemViewTwo.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: padding),
+            itemViewTwo.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -padding),
             itemViewTwo.heightAnchor.constraint(equalToConstant: cardItemHeight),
             
             dateLabel.topAnchor.constraint(equalTo: itemViewTwo.bottomAnchor, constant: padding),
-            dateLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: padding),
-            dateLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -padding),
-            dateLabel.heightAnchor.constraint(equalToConstant: 30),
+            dateLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: padding),
+            dateLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -padding),
+            dateLabel.heightAnchor.constraint(equalToConstant: 50),
         ])
     }
     
     
     private func getUserInfo() {
+        self.showLoadingView()
         NetworkManager.shared.getUserInfo(for: username) { [weak self] result in
             guard let self = self else { return }
+            self.removeLoadingView()
             switch result {
             case .success(let user):
                 print("--- fetch user success")

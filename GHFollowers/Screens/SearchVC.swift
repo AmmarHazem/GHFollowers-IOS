@@ -13,7 +13,6 @@ class SearchVC: GFDataLoadingVC {
     let logoImgView = UIImageView()
     let usernameTextField = GFTextField()
     let callToActionButton = GFButton(backgroundColor: .systemGreen, title: "Get Followers")
-    var logoImageViewTopConstraint: NSLayoutConstraint!
 
     
     //MARK: - Lifecycle Methods
@@ -44,10 +43,9 @@ class SearchVC: GFDataLoadingVC {
         logoImgView.image = Images.GHlogo
         
         let logoTopConstraintConstant: CGFloat = DeviceTypes.isiPhoneSE || DeviceTypes.isiPhone8Zoomed ? 20 : 80
-        logoImageViewTopConstraint = logoImgView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: logoTopConstraintConstant)
-        logoImageViewTopConstraint.isActive = true
         
         NSLayoutConstraint.activate([
+            logoImgView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: logoTopConstraintConstant),
             logoImgView.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
             logoImgView.heightAnchor.constraint(equalToConstant: 200),
             logoImgView.widthAnchor.constraint(equalToConstant: 200),
