@@ -8,4 +8,9 @@
 
 <img src="https://github.com/AmmarHazem/GHFollowers-IOS/blob/master/screens/2.png" height="300">
 <img src="https://github.com/AmmarHazem/GHFollowers-IOS/blob/master/screens/3.png" height="300">
+<img src="https://github.com/AmmarHazem/GHFollowers-IOS/blob/master/screens/4.png" height="300">
+<img src="https://github.com/AmmarHazem/GHFollowers-IOS/blob/master/screens/5.png" height="300">
+<img src="https://github.com/AmmarHazem/GHFollowers-IOS/blob/master/screens/6.png" height="300">
+<img src="https://github.com/AmmarHazem/GHFollowers-IOS/blob/master/screens/7.png" height="300">
+<img src="https://github.com/AmmarHazem/GHFollowers-IOS/blob/master/screens/8.png" height="300">
 
