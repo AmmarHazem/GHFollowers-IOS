@@ -13,7 +13,7 @@ class FavouritesCell: UITableViewCell {
     let avatarImgView = GFAvatarImageView(frame: .zero)
     let usernameLabel = GHTitleLabel(textAlignment: .left, fontSize: 26)
     
-    
+    // asd
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         configure()
